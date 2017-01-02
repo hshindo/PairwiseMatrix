@@ -1,23 +1,13 @@
-function setup_model()
+function setup_model(wordembeds)
     T = Float32
     x = Var()
-    y = Lookup(x)
-    y = pairwise(y)
-    y = Conv(T, (3,3,200,128), padding=1)
-    y = pooling(:max, (2,2), strides=2)
+    y = wordembeds(x)
+    h = Linear(T,100,100)(y)
+    d = Linear(T,100,100)(y)
+    y = pairwise(d, h)
+    y = reshape4d(y)
+    y = Conv(T, (3,3,200,1), pads=(1,1))(y)
+    y = pooling(:max, y, (3,3), pads=(1,1))
+    y = y[:,:]
     compile(y, x)
-end
-
-function forward(m, data::Vector{Token})
-    wordvec = map(t -> t.word, tokens)
-    wordvec = reshape(wordvec, 1, length(wordvec))
-    wordmat = m.wordfun(Var(wordvec))
-
-    charvecs = map(tokens) do t
-        #Var(zeros(Float32,50,1))
-        charvec = reshape(t.chars, 1, length(t.chars))
-        m.charfun(Var(charvec))
-    end
-    charmat = concat(2, charvecs)
-    m.sentfun(wordmat, charmat)
 end

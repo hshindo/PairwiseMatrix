@@ -1,9 +1,10 @@
 module PairwiseMatrix
 
+using Merlin
 using HDF5
 using MLDatasets
 
-include("dataset.jl")
+include("data.jl")
 include("model.jl")
 include("train.jl")
 
